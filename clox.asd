@@ -11,4 +11,6 @@
                #:cl-algebraic-data-type)
   :components ((:file "package")
                (:file "clox")
-               (:file "token-type")))
+               ;; Consider these two being part of the same file?
+               (:file "token-type")
+               (:file "token")))
