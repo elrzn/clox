@@ -13,7 +13,7 @@
   (let* ((scanner (make-scanner source))
          (tokens (scan-tokens scanner)))
     (loop for token = tokens
-          (format t "~a~%" token))))
+          do (format t "~a~%" token))))
 
 (defun error% (line message)
   (report line "" message))
