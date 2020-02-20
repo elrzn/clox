@@ -45,6 +45,12 @@
       (#\= (token+ (if (match scanner #\=) token.equal-equal token.equal)))
       (#\< (token+ (if (match scanner #\=) token.less-equal token.less)))
       (#\> (token+ (if (match scanner #\=) token.greater-equal token.greater)))
+      (#\/ (if (match scanner #\/)
+               ;; Comments reach until the end of the line.
+               (loop while (and (char/= (peek scanner) #\Newline)
+                                (not (is-at-end-p scanner)))
+                     do (advance scanner))
+             (token+ token.slash)))
       (t (error% (line scanner) "Unexpected character.")))))
 
 (defmethod advance ((scanner scanner))
@@ -60,3 +66,9 @@
         ((not (char= (char (source scanner) (current scanner))
                     expected-char)) nil)
         (t (incf (current scanner)))))
+
+(defmethod peek ((scanner scanner))
+  ;; Don't bother with the '\0' case, it does not make sense in Lisp.
+  ;; Just treat it as nil.
+  (when (not (is-at-end-p scanner))
+    (char (source scanner) (current scanner))))
