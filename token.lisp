@@ -14,3 +14,10 @@
             (type% token)
             (lexeme token)
             (literal token))))
+
+(defun make-token (token-type lexeme literal line)
+  (make-instance 'token
+                 :type% token-type
+                 :lexeme lexeme
+                 :literal literal
+                 :line line))
