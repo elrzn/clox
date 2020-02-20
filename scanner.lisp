@@ -4,7 +4,7 @@
 
 (defclass/std scanner ()
   ((source :type string :ri)
-   (tokens :type (trivial-types:proper-list token) :r)
+   (tokens :type (trivial-types:proper-list token) :a)
    (start :type fixnum :std 0 :a)
    (current :type fixnum :std 0 :a)
    (line :type fixnum :std 1 :a)))
