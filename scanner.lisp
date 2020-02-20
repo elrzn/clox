@@ -14,7 +14,7 @@
 
 (defmethod append-token ((scanner scanner) (token token))
   (push token (tokens scanner))
-  (nreverse (tokens scanner)))
+  (setf (tokens scanner) (nreverse (tokens scanner))))
 
 (defmethod scan-tokens ((scanner scanner))
   (loop until (is-at-end-p scanner)
