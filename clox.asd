@@ -1,7 +1,7 @@
 ;;;; clox.asd
 
 (asdf:defsystem #:clox
-  :description "Describe clox here"
+  :description "A Clox interpreter."
   :author "Eric Lorenzana"
   :license  "ISC"
   :version "0.0.1"
