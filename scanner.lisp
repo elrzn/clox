@@ -41,6 +41,10 @@
       (#\+ (token+ token.plus))
       (#\; (token+ token.semicolon))
       (#\* (token+ token.star))
+      (#\! (token+ (if (match scanner #\=) token.bang-equal token.bang)))
+      (#\= (token+ (if (match scanner #\=) token.equal-equal token.equal)))
+      (#\< (token+ (if (match scanner #\=) token.less-equal token.less)))
+      (#\> (token+ (if (match scanner #\=) token.greater-equal token.greater)))
       (t (error% (line scanner) "Unexpected character.")))))
 
 (defmethod advance ((scanner scanner))
@@ -50,3 +54,9 @@
 (defmethod add-token ((scanner scanner) (token-type token-type) literal)
   (let ((text (subseq (source scanner) (start scanner) (current scanner))))
     (append-token scanner (make-token token-type text literal (line scanner)))))
+
+(defmethod match ((scanner scanner) (expected-char character))
+  (cond ((is-at-end-p scanner) nil)
+        ((not (char= (char (source scanner) (current scanner))
+                    expected-char)) nil)
+        (t (incf (current scanner)))))
