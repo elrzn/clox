@@ -59,18 +59,24 @@
       (t (error% (line scanner) "Unexpected character.")))))
 
 (defmethod advance ((scanner scanner))
-  (incf (current scanner))
-  (char (source scanner) (1- (current scanner))))
+  (with-slots (source current)
+      scanner
+    (incf current)
+    (char source (1- current))))
 
 (defmethod add-token ((scanner scanner) (token-type token-type) literal)
-  (let ((text (subseq (source scanner) (start scanner) (current scanner))))
-    (append-token scanner (make-token token-type text literal (line scanner)))))
+  (with-slots (source start current line)
+      scanner
+    (let ((text (subseq source start current)))
+      (append-token scanner (make-token token-type text literal line)))))
 
 (defmethod match ((scanner scanner) (expected-char character))
-  (cond ((is-at-end-p scanner) nil)
-        ((not (char= (char (source scanner) (current scanner))
-                    expected-char)) nil)
-        (t (incf (current scanner)))))
+  (with-slots (source current)
+      scanner
+    (cond ((is-at-end-p scanner) nil)
+          ((not (char= (char source current)
+                       expected-char)) nil)
+          (t (incf current)))))
 
 (defmethod peek ((scanner scanner))
   ;; Don't bother with the '\0' case, it does not make sense in Lisp.
@@ -79,18 +85,18 @@
     (char (source scanner) (current scanner))))
 
 (defmethod scan-string-token ((scanner scanner))
-  (loop while (and (char/= (peek scanner) #\")
-                   (not (is-at-end-p scanner)))
-        when (char= (peek scanner) #\Newline)
-        do (incf (line scanner))
-        do (advance scanner))
-  ;; Unterminated string error.
-  (if (is-at-end-p scanner)
-      (error% (line scanner) "Unterminated string.")
-    (progn
-      (advance scanner) ;; Closing dot.
-      (add-token scanner
-                 token.string
-                 (subseq (source scanner)
-                         (1+ (start scanner))
-                         (current scanner))))))
+  (with-slots (source start current line)
+      scanner
+    (loop while (and (char/= (peek scanner) #\")
+                     (not (is-at-end-p scanner)))
+          when (char= (peek scanner) #\Newline)
+          do (incf line)
+          do (advance scanner))
+    ;; Unterminated string error.
+    (if (is-at-end-p scanner)
+        (error% line "Unterminated string.")
+      (progn
+        (advance scanner) ;; Closing dot.
+        (add-token scanner
+                   token.string
+                   (subseq source (1+ start) current))))))
