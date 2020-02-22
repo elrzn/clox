@@ -9,7 +9,8 @@
   :depends-on (#:alexandria
                #:defclass-std
                #:cl-algebraic-data-type
-               #:trivial-types)
+               #:trivial-types
+               #:parse-number)
   :components ((:file "package")
                (:file "clox")
                ;; Consider these two being part of the same file?

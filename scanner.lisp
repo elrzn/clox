@@ -30,33 +30,36 @@
 (defmethod scan-token ((scanner scanner))
   (flet ((token+ (token)
            (add-token scanner token nil)))
-    (case (advance scanner)
-      (#\( (token+ token.left-paren))
-      (#\) (token+ token.right-paren))
-      (#\{ (token+ token.left-brace))
-      (#\} (token+ token.right-brace))
-      (#\, (token+ token.comma))
-      (#\. (token+ token.dot))
-      (#\- (token+ token.minus))
-      (#\+ (token+ token.plus))
-      (#\; (token+ token.semicolon))
-      (#\* (token+ token.star))
-      (#\! (token+ (if (match scanner #\=) token.bang-equal token.bang)))
-      (#\= (token+ (if (match scanner #\=) token.equal-equal token.equal)))
-      (#\< (token+ (if (match scanner #\=) token.less-equal token.less)))
-      (#\> (token+ (if (match scanner #\=) token.greater-equal token.greater)))
-      (#\/ (if (match scanner #\/)
-               ;; Comments reach until the end of the line.
-               (loop while (and (char/= (peek scanner) #\Newline)
-                                (not (is-at-end-p scanner)))
-                     do (advance scanner))
-             (token+ token.slash)))
-      ;; Ignore whitespace.
-      (#\Space nil)
-      (#\Tab nil)
-      (#\Newline (incf (line scanner)))
-      (#\" (scan-string-token scanner))
-      (t (error% (line scanner) "Unexpected character.")))))
+    (let ((char% (advance scanner)))
+      (case char%
+        (#\( (token+ token.left-paren))
+        (#\) (token+ token.right-paren))
+        (#\{ (token+ token.left-brace))
+        (#\} (token+ token.right-brace))
+        (#\, (token+ token.comma))
+        (#\. (token+ token.dot))
+        (#\- (token+ token.minus))
+        (#\+ (token+ token.plus))
+        (#\; (token+ token.semicolon))
+        (#\* (token+ token.star))
+        (#\! (token+ (if (match scanner #\=) token.bang-equal token.bang)))
+        (#\= (token+ (if (match scanner #\=) token.equal-equal token.equal)))
+        (#\< (token+ (if (match scanner #\=) token.less-equal token.less)))
+        (#\> (token+ (if (match scanner #\=) token.greater-equal token.greater)))
+        (#\/ (if (match scanner #\/)
+                 ;; Comments reach until the end of the line.
+                 (loop while (and (char/= (peek scanner) #\Newline)
+                                  (not (is-at-end-p scanner)))
+                       do (advance scanner))
+               (token+ token.slash)))
+        ;; Ignore whitespace.
+        (#\Space nil)
+        (#\Tab nil)
+        (#\Newline (incf (line scanner)))
+        (#\" (scan-string-token scanner))
+        (t (cond
+            ((digit-char-p char%) (scan-number-token scanner))
+            (t (error% (line scanner) "Unexpected character."))))))))
 
 (defmethod advance ((scanner scanner))
   (with-slots (source current)
@@ -100,3 +103,27 @@
         (add-token scanner
                    token.string
                    (subseq source (1+ start) current))))))
+
+(defmethod scan-number-token ((scanner scanner))
+  "It consumes as many digits as it finds for the integer part of the
+literal. Then it looks for a fractional part, which is a decimal point
+`.` followed by at least one digit."
+  (loop while (digit-char-p (peek scanner))
+        do (advance scanner))
+  (when (and (char= (peek scanner) #\.)
+             (digit-char-p (peek-next scanner)))
+    (advance scanner)
+    (loop while (digit-char-p (peek scanner))
+          do (advance scanner)))
+  (with-slots (source start current)
+      scanner
+    (add-token scanner
+               token.number
+               (parse-number (subseq source start current)))))
+
+(defmethod peek-next ((scanner scanner))
+  (with-slots (current source)
+      scanner
+    (let ((index (1+ current)))
+      (when (not (>= index (length source)))
+        (char source index)))))
