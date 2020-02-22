@@ -55,6 +55,7 @@
       (#\Space nil)
       (#\Tab nil)
       (#\Newline (incf (line scanner)))
+      (#\" (scan-string-token scanner))
       (t (error% (line scanner) "Unexpected character.")))))
 
 (defmethod advance ((scanner scanner))
@@ -76,3 +77,20 @@
   ;; Just treat it as nil.
   (when (not (is-at-end-p scanner))
     (char (source scanner) (current scanner))))
+
+(defmethod scan-string-token ((scanner scanner))
+  (loop while (and (char/= (peek scanner) #\")
+                   (not (is-at-end-p scanner)))
+        when (char= (peek scanner) #\Newline)
+        do (incf (line scanner))
+        do (advance scanner))
+  ;; Unterminated string error.
+  (if (is-at-end-p scanner)
+      (error% (line scanner) "Unterminated string.")
+    (progn
+      (advance scanner) ;; Closing dot.
+      (add-token scanner
+                 token.string
+                 (subseq (source scanner)
+                         (1+ (start scanner))
+                         (current scanner))))))
