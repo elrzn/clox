@@ -88,6 +88,9 @@
     (char (source scanner) (current scanner))))
 
 (defmethod scan-string-token ((scanner scanner))
+  "Consumes characters until it hits the delimiter of the string. Will
+signal an error in case of an abrupt end of input before the string is
+closed."
   (with-slots (source start current line)
       scanner
     (loop while (and (char/= (peek scanner) #\")
