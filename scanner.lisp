@@ -51,6 +51,10 @@
                                 (not (is-at-end-p scanner)))
                      do (advance scanner))
              (token+ token.slash)))
+      ;; Ignore whitespace.
+      (#\Space nil)
+      (#\Tab nil)
+      (#\Newline (incf (line scanner)))
       (t (error% (line scanner) "Unexpected character.")))))
 
 (defmethod advance ((scanner scanner))
