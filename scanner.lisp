@@ -2,6 +2,24 @@
 
 (in-package :clox)
 
+(defparameter +keywords+
+  '(("and"    . token.and)
+    ("class"  . token.class)
+    ("else"   . token.else)
+    ("false"  . token.false)
+    ("for"    . token.for)
+    ("fun"    . token.fun)
+    ("if"     . token.if)
+    ("nil"    . token.nil)
+    ("or"     . token.or)
+    ("print"  . token.print)
+    ("return" . token.return)
+    ("super"  . token.super)
+    ("this"   . token.this)
+    ("true"   . token.true)
+    ("var"    . token.var)
+    ("while"  . token.while)))
+
 (defclass/std scanner ()
   ((source :type string :ri)
    (tokens :type (trivial-types:proper-list token) :a)
@@ -59,6 +77,7 @@
         (#\" (scan-string-token scanner))
         (t (cond
             ((digit-char-p char%) (scan-number-token scanner))
+            ((alphabeticp char%) (identifier scanner))
             (t (error% (line scanner) "Unexpected character."))))))))
 
 (defmethod advance ((scanner scanner))
@@ -130,3 +149,16 @@ literal. Then it looks for a fractional part, which is a decimal point
     (let ((index (1+ current)))
       (when (not (>= index (length source)))
         (char source index)))))
+
+(defmethod identifier ((scanner scanner))
+  (with-slots (start current source)
+      scanner
+    (loop while (alphanumericp (peek scanner))
+          do (advance scanner))
+    (let* ((text (subseq source start current))
+           (token-type (assoc-value +keywords+ text :test #'equal)))
+      (add-token scanner token.identifier (or token-type token.identifier)))))
+
+(defun alphabeticp (character)
+  (or (alpha-char-p character)
+      (char= character #\_)))
