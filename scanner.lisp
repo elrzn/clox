@@ -31,16 +31,17 @@
   (make-instance 'scanner :source source))
 
 (defmethod append-token ((scanner scanner) (token token))
-  (push token (tokens scanner))
-  (setf (tokens scanner) (nreverse (tokens scanner))))
+  (push token (tokens scanner)))
 
 (defmethod scan-tokens ((scanner scanner))
-  (loop until (is-at-end-p scanner)
-        do (progn
-             (setf (start scanner) (current scanner))
-             (scan-token scanner)))
-  (append-token scanner
-                (make-token token.eof "" nil (line scanner))))
+  (with-slots (tokens)
+      scanner
+    (loop until (is-at-end-p scanner)
+          do (progn
+               (setf (start scanner) (current scanner))
+               (scan-token scanner)))
+    (append-token scanner (make-token token.eof "" nil (line scanner)))
+    (setf tokens (nreverse tokens))))
 
 (defmethod is-at-end-p ((scanner scanner))
   (>= (current scanner) (length (source scanner))))
