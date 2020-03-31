@@ -12,8 +12,8 @@
 (defun run (source)
   (let* ((scanner (make-scanner source))
          (tokens (scan-tokens scanner)))
-    (loop for token in tokens
-          do (format t "~a~%" token))))
+    (dolist (token tokens)
+      (format t "~a~%" token))))
 
 (defun error% (line message)
   (report line "" message))
