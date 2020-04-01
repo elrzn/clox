@@ -7,7 +7,6 @@
   :version "0.0.1"
   :serial t
   :depends-on (#:alexandria
-               #:defclass-std
                #:cl-algebraic-data-type
                #:trivial-types
                #:parse-number)

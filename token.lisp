@@ -47,11 +47,11 @@
   token.while
   token.eof)
 
-(defclass/std token ()
-  ((type% :type token-type :ri)
-   (lexeme :type string :ri)
-   (literal :ri)
-   (line :type integer :ri)))
+(defclass token ()
+  ((type%   :reader type%   :initarg :type    :initform nil :type token-type)
+   (lexeme  :reader lexeme  :initarg :lexeme  :initform nil :type string)
+   (literal :reader literal :initarg :literal :initform nil)
+   (line    :reader line    :initarg :line    :initform nil :type integer)))
 
 (defmethod print-object ((token token) out)
   (print-unreadable-object (token out :type t)
@@ -62,7 +62,7 @@
 
 (defun make-token (token-type lexeme literal line)
   (make-instance 'token
-                 :type% token-type
+                 :type token-type
                  :lexeme lexeme
                  :literal literal
                  :line line))

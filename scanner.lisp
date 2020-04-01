@@ -20,12 +20,12 @@
     ("var"    . token.var)
     ("while"  . token.while)))
 
-(defclass/std scanner ()
-  ((source :type string :ri)
-   (tokens :type (trivial-types:proper-list token) :a)
-   (start :type fixnum :std 0 :a)
-   (current :type fixnum :std 0 :a)
-   (line :type fixnum :std 1 :a)))
+(defclass scanner ()
+  ((source  :reader   source  :initform nil :type string :initarg :source)
+   (tokens  :accessor tokens  :initform nil :type (trivial-types:proper-list token))
+   (start   :accessor start   :initform 0   :type fixnum)
+   (current :accessor current :initform 0   :type fixnum)
+   (line    :accessor line    :initform 1   :type fixnum)))
 
 (defun make-scanner (source)
   (make-instance 'scanner :source source))
