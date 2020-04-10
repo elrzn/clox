@@ -13,4 +13,5 @@
   :components ((:file "package")
                (:file "clox")
                (:file "token")
-               (:file "scanner")))
+               (:file "scanner")
+               (:file "ast")))
